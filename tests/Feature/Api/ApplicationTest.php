@@ -20,7 +20,7 @@ test('user can create application', function () {
 
     $response->assertStatus(201)
         ->assertJsonStructure([
-            'status',
+            'success',
             'message',
             'data' => [
                 'id',
@@ -31,7 +31,7 @@ test('user can create application', function () {
             ],
         ])
         ->assertJson([
-            'status' => 'success',
+            'success' => true,
             'message' => 'Application created successfully',
         ]);
 
@@ -49,7 +49,7 @@ test('user can list their applications', function () {
 
     $response->assertStatus(200)
         ->assertJsonStructure([
-            'status',
+            'success',
             'message',
             'data' => [
                 '*' => [
@@ -59,10 +59,10 @@ test('user can list their applications', function () {
                     'user_id',
                 ],
             ],
-            'meta',
+            'pagination',
         ])
         ->assertJson([
-            'status' => 'success',
+            'success' => true,
             'message' => 'Applications retrieved successfully',
         ])
         ->assertJsonCount(3, 'data');

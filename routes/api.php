@@ -51,7 +51,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('application-groups/{applicationGroup}/subscribers', [ApplicationGroupController::class, 'subscribers']);
     
     // Incidents
+    Route::get('incidents/stats', [IncidentController::class, 'stats']);
     Route::apiResource('incidents', IncidentController::class);
+    Route::put('incidents/{incident}/resolve', [IncidentController::class, 'resolve']);
+    Route::put('incidents/{incident}/reopen', [IncidentController::class, 'reopen']);
     
     // Subscriptions
     Route::apiResource('subscriptions', SubscriptionController::class);

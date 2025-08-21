@@ -21,10 +21,11 @@ class NotificationController extends Controller
         $user = $request->user();
 
         $settings = [
-            'notification_email' => $user->notification_email,
+            'email_notifications' => !empty($user->notification_email),
             'slack_webhook_url' => $user->slack_webhook_url,
             'teams_webhook_url' => $user->teams_webhook_url,
             'discord_webhook_url' => $user->discord_webhook_url,
+            'default_notification_channels' => ['email'], // Default value for now
         ];
 
         return $this->successResponse($settings, 'Notification settings retrieved successfully');

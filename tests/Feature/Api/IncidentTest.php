@@ -193,7 +193,7 @@ test('user can delete their incident', function () {
             'message' => 'Incident deleted successfully',
         ]);
 
-    $this->assertSoftDeleted('incidents', [
+    $this->assertDatabaseMissing('incidents', [
         'id' => $incident->id,
     ]);
 });

@@ -17,7 +17,7 @@ test('user can register', function () {
 
     $response->assertStatus(201)
         ->assertJsonStructure([
-            'status',
+            'success',
             'message',
             'data' => [
                 'user' => ['id', 'name', 'email'],
@@ -25,7 +25,7 @@ test('user can register', function () {
             ],
         ])
         ->assertJson([
-            'status' => 'success',
+            'success' => true,
             'message' => 'User registered successfully',
         ]);
 
@@ -47,7 +47,7 @@ test('user can login', function () {
 
     $response->assertStatus(200)
         ->assertJsonStructure([
-            'status',
+            'success',
             'message',
             'data' => [
                 'user' => ['id', 'name', 'email'],
@@ -55,7 +55,7 @@ test('user can login', function () {
             ],
         ])
         ->assertJson([
-            'status' => 'success',
+            'success' => true,
             'message' => 'Login successful',
         ]);
 });
@@ -67,11 +67,11 @@ test('user can logout', function () {
 
     $response->assertStatus(200)
         ->assertJsonStructure([
-            'status',
+            'success',
             'message',
         ])
         ->assertJson([
-            'status' => 'success',
+            'success' => true,
             'message' => 'Logged out successfully',
         ]);
 });
@@ -83,12 +83,12 @@ test('authenticated user can get profile', function () {
 
     $response->assertStatus(200)
         ->assertJsonStructure([
-            'status',
+            'success',
             'message',
             'data' => ['id', 'name', 'email'],
         ])
         ->assertJson([
-            'status' => 'success',
+            'success' => true,
             'message' => 'User profile retrieved successfully',
         ]);
 });

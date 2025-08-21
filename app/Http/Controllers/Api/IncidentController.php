@@ -35,12 +35,12 @@ class IncidentController extends Controller
 
         // Filter by status
         if ($request->has('status')) {
-            $query->where('status', $request->status);
+            $query->where('status', strtoupper($request->status));
         }
 
         // Filter by severity
         if ($request->has('severity')) {
-            $query->where('severity', $request->severity);
+            $query->where('severity', strtoupper($request->severity));
         }
 
         // Filter by date range
@@ -134,7 +134,7 @@ class IncidentController extends Controller
 
         $incident->delete();
 
-        return $this->noContentResponse('Incident deleted successfully');
+        return $this->successResponse(null, 'Incident deleted successfully');
     }
 
     /**
@@ -151,6 +151,7 @@ class IncidentController extends Controller
         $incident->update([
             'status' => IncidentStatus::RESOLVED,
             'ended_at' => now(),
+            'resolved_at' => now(),
         ]);
 
         $incident->load(['application', 'user']);
@@ -178,6 +179,7 @@ class IncidentController extends Controller
         $incident->update([
             'status' => IncidentStatus::OPEN,
             'ended_at' => null,
+            'resolved_at' => null,
         ]);
 
         $incident->load(['application', 'user']);
@@ -211,17 +213,29 @@ class IncidentController extends Controller
                 $q->where('user_id', $userId);
             })->where('status', IncidentStatus::RESOLVED)->count(),
             
-            'critical' => Incident::whereHas('application', function ($q) use ($userId) {
-                $q->where('user_id', $userId);
-            })->where('severity', 'CRITICAL')->count(),
+            'by_severity' => [
+                'critical' => Incident::whereHas('application', function ($q) use ($userId) {
+                    $q->where('user_id', $userId);
+                })->where('severity', 'CRITICAL')->count(),
+                
+                'high' => Incident::whereHas('application', function ($q) use ($userId) {
+                    $q->where('user_id', $userId);
+                })->where('severity', 'HIGH')->count(),
+                
+                'low' => Incident::whereHas('application', function ($q) use ($userId) {
+                    $q->where('user_id', $userId);
+                })->where('severity', 'LOW')->count(),
+            ],
             
-            'high' => Incident::whereHas('application', function ($q) use ($userId) {
+            'by_application' => Incident::whereHas('application', function ($q) use ($userId) {
                 $q->where('user_id', $userId);
-            })->where('severity', 'HIGH')->count(),
-            
-            'low' => Incident::whereHas('application', function ($q) use ($userId) {
-                $q->where('user_id', $userId);
-            })->where('severity', 'LOW')->count(),
+            })->with('application:id,name')
+                ->get()
+                ->groupBy('application.name')
+                ->map(function ($incidents) {
+                    return $incidents->count();
+                })
+                ->toArray(),
         ];
 
         return $this->successResponse($stats, 'Incident statistics retrieved successfully');
