@@ -9,9 +9,31 @@ use Illuminate\Http\Resources\Json\ResourceCollection;
 class ApiResponse
 {
     /**
-     * Return a success response.
+     * Return a successful response (200 OK).
+     */
+    public static function ok(
+        mixed $data = null,
+        string $message = 'Success',
+        array $meta = []
+    ): JsonResponse {
+        return self::buildSuccessResponse($data, $message, 200, $meta);
+    }
+
+    /**
+     * Return a success response (alias for ok).
      */
     public static function success(
+        mixed $data = null,
+        string $message = 'Success',
+        array $meta = []
+    ): JsonResponse {
+        return self::ok($data, $message, $meta);
+    }
+
+    /**
+     * Build a success response with the given parameters.
+     */
+    private static function buildSuccessResponse(
         mixed $data = null,
         string $message = 'Success',
         int $statusCode = 200,
@@ -32,13 +54,13 @@ class ApiResponse
                     $response['links'] = $data->response()->getData(true)['links'];
                 }
             } elseif ($data instanceof JsonResource) {
-                $response['data'] = $data->response()->getData(true);
+                $response['data'] = $data->toArray(request());
             } else {
                 $response['data'] = $data;
             }
         }
 
-        if (!empty($meta)) {
+        if (! empty($meta)) {
             $response['meta'] = array_merge($response['meta'] ?? [], $meta);
         }
 
@@ -53,7 +75,7 @@ class ApiResponse
         string $message = 'Success'
     ): JsonResponse {
         $data = $collection->response()->getData(true);
-        
+
         return response()->json([
             'status' => 'success',
             'message' => $message,
@@ -77,7 +99,7 @@ class ApiResponse
             'message' => $message,
         ];
 
-        if (!empty($errors)) {
+        if (! empty($errors)) {
             $response['errors'] = $errors;
         }
 
@@ -131,17 +153,17 @@ class ApiResponse
     }
 
     /**
-     * Return a created response.
+     * Return a created response (201 Created).
      */
     public static function created(
         mixed $data = null,
         string $message = 'Resource created successfully'
     ): JsonResponse {
-        return self::success($data, $message, 201);
+        return self::buildSuccessResponse($data, $message, 201);
     }
 
     /**
-     * Return a no content response.
+     * Return a no content response (204 No Content).
      */
     public static function noContent(string $message = 'Operation completed successfully'): JsonResponse
     {
@@ -190,7 +212,8 @@ class ApiResponse
             if (app()->environment('production')) {
                 return self::serverError('Database error occurred');
             }
-            return self::serverError('Database error: ' . $exception->getMessage());
+
+            return self::serverError('Database error: '.$exception->getMessage());
         }
 
         // Default server error for unhandled exceptions

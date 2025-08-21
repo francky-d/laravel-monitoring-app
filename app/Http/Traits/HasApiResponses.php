@@ -18,7 +18,11 @@ trait HasApiResponses
         int $statusCode = 200,
         array $meta = []
     ): JsonResponse {
-        return ApiResponse::success($data, $message, $statusCode, $meta);
+        return match ($statusCode) {
+            201 => ApiResponse::created($data, $message),
+            204 => ApiResponse::noContent($message),
+            default => ApiResponse::ok($data, $message, $meta),
+        };
     }
 
     /**

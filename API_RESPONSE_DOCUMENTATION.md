@@ -237,16 +237,53 @@ This Laravel monitoring application uses a consistent API response structure acr
 - `App\Http\Traits\HasApiResponses` - Trait for controllers to use response methods
 
 ### Available Response Methods
-- `successResponse($data, $message, $statusCode, $meta)` - General success
-- `createdResponse($data, $message)` - Resource creation (201)
-- `paginatedResponse($collection, $message)` - Paginated data
-- `errorResponse($message, $statusCode, $errors, $data)` - General error
-- `validationErrorResponse($errors, $message)` - Validation errors (422)
-- `unauthorizedResponse($message)` - Authentication errors (401)
-- `forbiddenResponse($message)` - Authorization errors (403)
-- `notFoundResponse($message)` - Not found errors (404)
-- `serverErrorResponse($message)` - Server errors (500)
-- `noContentResponse($message)` - No content (204)
+- `ok($data, $message, $meta)` - Successful operations (200)
+- `success($data, $message, $meta)` - Alias for ok() method (200)  
+- `created($data, $message)` - Resource creation (201)
+- `noContent($message)` - Operations with no response body (204)
+- `paginated($collection, $message)` - Paginated data with links/meta
+- `error($message, $statusCode, $errors, $data)` - General error
+- `validationError($errors, $message)` - Validation errors (422)
+- `unauthorized($message)` - Authentication errors (401)
+- `forbidden($message)` - Authorization errors (403)
+- `notFound($message)` - Not found errors (404)
+- `serverError($message)` - Server errors (500)
+
+### Usage Examples
+
+#### Success Responses
+```php
+// 200 OK - Successful operations
+return ApiResponse::ok($data, 'Operation successful');
+return ApiResponse::success($data, 'Data retrieved');  // Alias for ok()
+
+// 201 Created - Resource creation
+return ApiResponse::created($newUser, 'User created successfully');
+
+// 204 No Content - Operations without response body
+return ApiResponse::noContent('Resource deleted successfully');
+```
+
+#### Error Responses
+```php
+// 400 Bad Request
+return ApiResponse::error('Invalid request parameters', 400);
+
+// 401 Unauthorized
+return ApiResponse::unauthorized('Authentication required');
+
+// 403 Forbidden
+return ApiResponse::forbidden('Insufficient permissions');
+
+// 404 Not Found
+return ApiResponse::notFound('Resource not found');
+
+// 422 Validation Error
+return ApiResponse::validationError($validator->errors(), 'Validation failed');
+
+// 500 Server Error
+return ApiResponse::serverError('Something went wrong');
+```
 
 ### Exception Handling
 The application automatically converts Laravel exceptions to consistent API responses:
