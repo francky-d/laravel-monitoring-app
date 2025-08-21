@@ -17,6 +17,10 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('notification_email')->nullable();
+            $table->string('slack_webhook_url', 500)->nullable();
+            $table->string('teams_webhook_url', 500)->nullable();
+            $table->string('discord_webhook_url', 500)->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
