@@ -14,6 +14,29 @@ class SubscriptionResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'user_id' => $this->user_id,
+            'subscribable_type' => $this->subscribable_type,
+            'subscribable_id' => $this->subscribable_id,
+            'notification_channels' => $this->notification_channels,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+            
+            // Relationships
+            'user' => new UserResource($this->whenLoaded('user')),
+            'subscribable' => $this->when(
+                $this->relationLoaded('subscribable'),
+                function () {
+                    if ($this->subscribable_type === 'App\\Models\\Application') {
+                        return new ApplicationResource($this->subscribable);
+                    }
+                    if ($this->subscribable_type === 'App\\Models\\ApplicationGroup') {
+                        return new ApplicationGroupResource($this->subscribable);
+                    }
+                    return null;
+                }
+            ),
+        ];
     }
 }
