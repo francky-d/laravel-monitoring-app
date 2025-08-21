@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\ApplicationController;
 use App\Http\Controllers\Api\ApplicationGroupController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BaseApiController;
 use App\Http\Controllers\Api\IncidentController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\SubscriptionController;
@@ -19,6 +20,9 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+
+// Public routes
+Route::get('status', [BaseApiController::class, 'status']);
 
 // Authentication routes
 Route::prefix('auth')->group(function () {
