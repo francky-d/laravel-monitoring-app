@@ -24,6 +24,7 @@ class Application extends Model
         'url',
         'url_to_watch',
         'expected_http_code',
+        'monitoring_interval',
         'user_id',
         'application_group_id',
     ];
