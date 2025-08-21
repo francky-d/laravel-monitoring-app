@@ -19,19 +19,19 @@ class SubscriptionFactory extends Factory
      */
     public function definition(): array
     {
-        $subscribableType = $this->faker->randomElement(['application', 'group']);
+        $subscribableType = fake()->randomElement(['application', 'group']);
         
         return [
             'user_id' => User::factory(),
-            'notification_channels' => $this->faker->randomElements(
+            'notification_channels' => fake()->randomElements(
                 ['email', 'slack', 'discord', 'teams'],
-                $this->faker->numberBetween(1, 3)
+                fake()->numberBetween(1, 3)
             ),
-            'webhook_url' => $this->faker->optional(0.7)->url(),
             'subscribable_type' => $subscribableType === 'application' ? Application::class : ApplicationGroup::class,
             'subscribable_id' => $subscribableType === 'application' ? 
                 Application::factory() : 
                 ApplicationGroup::factory(),
+            'is_active' => true,
         ];
     }
 
@@ -73,7 +73,7 @@ class SubscriptionFactory extends Factory
     public function withWebhook(string $url = null): static
     {
         return $this->state(fn (array $attributes) => [
-            'webhook_url' => $url ?? $this->faker->url(),
+            'webhook_url' => $url ?? fake()->url(),
         ]);
     }
 

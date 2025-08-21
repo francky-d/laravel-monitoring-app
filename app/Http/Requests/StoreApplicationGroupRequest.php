@@ -11,7 +11,7 @@ class StoreApplicationGroupRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,8 @@ class StoreApplicationGroupRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => 'required|string|max:255|unique:application_groups,name,NULL,id,user_id,' . $this->user()->id,
+            'description' => 'nullable|string|max:1000',
         ];
     }
 }

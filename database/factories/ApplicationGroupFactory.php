@@ -18,8 +18,8 @@ class ApplicationGroupFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->words(2, true) . ' Group',
-            'description' => $this->faker->optional()->sentence(10),
+            'name' => fake()->word() . ' Group',
+            'description' => fake()->optional()->sentence(10),
             'user_id' => User::factory(),
         ];
     }

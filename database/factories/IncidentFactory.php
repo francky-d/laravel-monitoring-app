@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Application;
+use App\Models\User;
 use App\Enums\IncidentSeverity;
 use App\Enums\IncidentStatus;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -20,15 +21,17 @@ class IncidentFactory extends Factory
     public function definition(): array
     {
         return [
-            'title' => $this->faker->sentence(6),
-            'description' => $this->faker->paragraph(3),
-            'severity' => $this->faker->randomElement(IncidentSeverity::cases()),
-            'status' => $this->faker->randomElement(IncidentStatus::cases()),
-            'response_code' => $this->faker->optional()->randomElement([404, 500, 502, 503, 504]),
-            'response_time' => $this->faker->optional()->numberBetween(100, 10000),
-            'error_message' => $this->faker->optional()->sentence(),
+            'title' => fake()->word() . ' Issue',
+            'description' => fake()->paragraph(3),
+            'severity' => fake()->randomElement(IncidentSeverity::cases()),
+            'status' => fake()->randomElement(IncidentStatus::cases()),
+            'response_code' => fake()->optional()->randomElement([404, 500, 502, 503, 504]),
+            'response_time' => fake()->optional()->numberBetween(100, 10000),
+            'error_message' => fake()->optional()->sentence(),
             'application_id' => Application::factory(),
-            'resolved_at' => $this->faker->optional()->dateTimeBetween('-1 month', 'now'),
+            'user_id' => User::factory(),
+            'started_at' => fake()->dateTimeBetween('-1 day', 'now'),
+            'resolved_at' => fake()->optional()->dateTimeBetween('-1 month', 'now'),
         ];
     }
 

@@ -95,17 +95,13 @@ class ApplicationGroupController extends Controller
     {
         $this->authorize('delete', $applicationGroup);
 
-        // Check if the group has applications
-        if ($applicationGroup->applications()->count() > 0) {
-            return $this->errorResponse(
-                'Cannot delete group that contains applications. Please move or delete the applications first.',
-                400
-            );
-        }
+        // Remove applications from this group (set application_group_id to null)
+        \App\Models\Application::where('application_group_id', $applicationGroup->id)
+            ->update(['application_group_id' => null]);
 
         $applicationGroup->delete();
 
-        return $this->noContentResponse('Application group deleted successfully');
+        return $this->successResponse(null, 'Application group deleted successfully');
     }
 
     /**
@@ -142,6 +138,43 @@ class ApplicationGroupController extends Controller
     }
 
     /**
+     * Add a single application to a group.
+     */
+    public function addApplication(Request $request, ApplicationGroup $applicationGroup): JsonResponse
+    {
+        $this->authorize('update', $applicationGroup);
+
+        $validated = $request->validate([
+            'application_id' => [
+                'required',
+                'string',
+                'exists:applications,id',
+                function ($attribute, $value, $fail) use ($request) {
+                    $application = \App\Models\Application::where('id', $value)
+                        ->where('user_id', $request->user()->id)
+                        ->first();
+                    
+                    if (!$application) {
+                        $fail('The selected application does not belong to you.');
+                    }
+                },
+            ],
+        ]);
+
+        $application = \App\Models\Application::find($validated['application_id']);
+
+        // Update application to belong to this group
+        $application->update(['application_group_id' => $applicationGroup->id]);
+
+        $applicationGroup->load(['applications']);
+
+        return $this->successResponse(
+            new ApplicationGroupResource($applicationGroup),
+            'Application added to group successfully'
+        );
+    }
+
+    /**
      * Remove applications from a group.
      */
     public function removeApplications(Request $request, ApplicationGroup $applicationGroup): JsonResponse
@@ -168,6 +201,33 @@ class ApplicationGroupController extends Controller
     }
 
     /**
+     * Remove a single application from a group.
+     */
+    public function removeApplication(Request $request, ApplicationGroup $applicationGroup, \App\Models\Application $application): JsonResponse
+    {
+        $this->authorize('update', $applicationGroup);
+
+        // Verify application belongs to the user and is in this group
+        if ($application->user_id !== $request->user()->id) {
+            return $this->errorResponse('Application does not belong to you.', 403);
+        }
+
+        if ($application->application_group_id !== $applicationGroup->id) {
+            return $this->errorResponse('Application is not in this group.', 400);
+        }
+
+        // Remove application from group
+        $application->update(['application_group_id' => null]);
+
+        $applicationGroup->load(['applications']);
+
+        return $this->successResponse(
+            new ApplicationGroupResource($applicationGroup),
+            'Application removed from group successfully'
+        );
+    }
+
+    /**
      * Get statistics for application groups.
      */
     public function stats(Request $request): JsonResponse
@@ -185,5 +245,23 @@ class ApplicationGroupController extends Controller
         ];
 
         return $this->successResponse($stats, 'Application group statistics retrieved successfully');
+    }
+
+    /**
+     * Get subscribers for an application group.
+     */
+    public function subscribers(ApplicationGroup $applicationGroup): JsonResponse
+    {
+        $this->authorize('view', $applicationGroup);
+
+        $subscribers = $applicationGroup->subscriptions()
+            ->with(['user'])
+            ->where('is_active', true)
+            ->get();
+
+        return $this->successResponse(
+            \App\Http\Resources\SubscriptionResource::collection($subscribers),
+            'Application group subscribers retrieved successfully'
+        );
     }
 }

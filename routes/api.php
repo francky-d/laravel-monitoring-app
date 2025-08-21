@@ -46,9 +46,9 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Application Groups
     Route::apiResource('application-groups', ApplicationGroupController::class);
-    Route::post('application-groups/{group}/applications', [ApplicationGroupController::class, 'addApplication']);
-    Route::delete('application-groups/{group}/applications/{application}', [ApplicationGroupController::class, 'removeApplication']);
-    Route::get('application-groups/{group}/subscribers', [ApplicationGroupController::class, 'subscribers']);
+    Route::post('application-groups/{applicationGroup}/applications', [ApplicationGroupController::class, 'addApplication']);
+    Route::delete('application-groups/{applicationGroup}/applications/{application}', [ApplicationGroupController::class, 'removeApplication']);
+    Route::get('application-groups/{applicationGroup}/subscribers', [ApplicationGroupController::class, 'subscribers']);
     
     // Incidents
     Route::apiResource('incidents', IncidentController::class);
@@ -58,8 +58,9 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Notification settings
     Route::prefix('user')->group(function () {
-        Route::get('notification-settings', [NotificationController::class, 'getSettings']);
+        Route::get('notification-settings', [NotificationController::class, 'settings']);
         Route::put('notification-settings', [NotificationController::class, 'updateSettings']);
-        Route::post('test-notification/{channel}', [NotificationController::class, 'testNotification']);
+        Route::post('test-notification/{type}', [NotificationController::class, 'test']);
+        Route::get('notification-history', [NotificationController::class, 'history']);
     });
 });

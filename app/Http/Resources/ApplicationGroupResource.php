@@ -23,9 +23,9 @@ class ApplicationGroupResource extends JsonResource
             'updated_at' => $this->updated_at,
             
             // Relationships
-            'user' => new UserResource($this->whenLoaded('user')),
-            'applications' => ApplicationResource::collection($this->whenLoaded('applications')),
-            'subscriptions' => SubscriptionResource::collection($this->whenLoaded('subscriptions')),
+            'user' => $this->whenLoaded('user', fn() => new UserResource($this->user)),
+            'applications' => $this->whenLoaded('applications', fn() => ApplicationResource::collection($this->applications)),
+            'subscriptions' => $this->whenLoaded('subscriptions', fn() => SubscriptionResource::collection($this->subscriptions)),
             
             // Counts
             'applications_count' => $this->when(

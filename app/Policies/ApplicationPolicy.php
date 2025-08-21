@@ -22,8 +22,17 @@ class ApplicationPolicy
     public function view(User $user, Application $application): bool
     {
         // Users can view their own applications or applications they're subscribed to
-        return $user->id === $application->user_id || 
-               $application->subscriptions()->where('user_id', $user->id)->exists();
+        if ($user->id === $application->user_id) {
+            return true;
+        }
+
+        // Check if user is subscribed to this application
+        try {
+            return $application->subscriptions()->where('user_id', $user->id)->exists();
+        } catch (\Exception $e) {
+            // If there's any database error, default to deny access
+            return false;
+        }
     }
 
     /**

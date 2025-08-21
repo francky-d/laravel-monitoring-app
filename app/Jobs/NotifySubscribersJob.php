@@ -35,9 +35,20 @@ class NotifySubscribersJob implements ShouldQueue
         Log::info("Notifying subscribers for incident {$this->incident->id} - event: {$this->eventType}");
 
         // Get all active subscriptions for this application
-        $subscriptions = Subscription::where('application_id', $this->incident->application_id)
+        $subscriptions = Subscription::where('subscribable_type', \App\Models\Application::class)
+            ->where('subscribable_id', $this->incident->application_id)
             ->where('is_active', true)
             ->get();
+
+        // Also get subscriptions for the application's group
+        if ($this->incident->application->application_group_id) {
+            $groupSubscriptions = Subscription::where('subscribable_type', \App\Models\ApplicationGroup::class)
+                ->where('subscribable_id', $this->incident->application->application_group_id)
+                ->where('is_active', true)
+                ->get();
+            
+            $subscriptions = $subscriptions->merge($groupSubscriptions);
+        }
 
         foreach ($subscriptions as $subscription) {
             $this->sendNotification($subscription);
@@ -48,20 +59,22 @@ class NotifySubscribersJob implements ShouldQueue
     }
 
     /**
-     * Send notification based on subscription type.
+     * Send notification based on subscription channels.
      */
     private function sendNotification(Subscription $subscription): void
     {
-        try {
-            match ($subscription->notification_type) {
-                'email' => $this->sendEmailNotification($subscription),
-                'slack' => $this->sendSlackNotification($subscription),
-                'teams' => $this->sendTeamsNotification($subscription),
-                'discord' => $this->sendDiscordNotification($subscription),
-                default => Log::warning("Unknown notification type: {$subscription->notification_type}"),
-            };
-        } catch (\Exception $e) {
-            Log::error("Failed to send {$subscription->notification_type} notification: {$e->getMessage()}");
+        foreach ($subscription->notification_channels as $channel) {
+            try {
+                match ($channel) {
+                    'email' => $this->sendEmailNotification($subscription),
+                    'slack' => $this->sendSlackNotification($subscription),
+                    'teams' => $this->sendTeamsNotification($subscription),
+                    'discord' => $this->sendDiscordNotification($subscription),
+                    default => Log::warning("Unknown notification channel: {$channel}"),
+                };
+            } catch (\Exception $e) {
+                Log::error("Failed to send {$channel} notification: {$e->getMessage()}");
+            }
         }
     }
 

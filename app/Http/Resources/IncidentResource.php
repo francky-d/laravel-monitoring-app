@@ -31,8 +31,8 @@ class IncidentResource extends JsonResource
             'updated_at' => $this->updated_at,
             
             // Relationships
-            'application' => new ApplicationResource($this->whenLoaded('application')),
-            'user' => new UserResource($this->whenLoaded('user')),
+            'application' => $this->whenLoaded('application', fn() => new ApplicationResource($this->application)),
+            'user' => $this->whenLoaded('user', fn() => new UserResource($this->user)),
             
             // Additional metadata
             'severity_color' => $this->severity->getColor(),

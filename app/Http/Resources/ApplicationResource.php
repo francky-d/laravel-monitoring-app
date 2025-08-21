@@ -27,10 +27,10 @@ class ApplicationResource extends JsonResource
             'updated_at' => $this->updated_at,
             
             // Conditional relationships
-            'user' => new UserResource($this->whenLoaded('user')),
-            'application_group' => new ApplicationGroupResource($this->whenLoaded('applicationGroup')),
-            'incidents' => IncidentResource::collection($this->whenLoaded('incidents')),
-            'subscriptions' => SubscriptionResource::collection($this->whenLoaded('subscriptions')),
+            'user' => $this->whenLoaded('user', fn() => new UserResource($this->user)),
+            'application_group' => $this->whenLoaded('applicationGroup', fn() => new ApplicationGroupResource($this->applicationGroup)),
+            'incidents' => $this->whenLoaded('incidents', fn() => IncidentResource::collection($this->incidents)),
+            'subscriptions' => $this->whenLoaded('subscriptions', fn() => SubscriptionResource::collection($this->subscriptions)),
             
             // Incident counts
             'incidents_count' => $this->when(

@@ -26,8 +26,12 @@ class Incident extends Model
         'user_id',
         'status',
         'severity',
+        'response_code',
+        'response_time',
+        'error_message',
         'started_at',
         'ended_at',
+        'resolved_at',
     ];
 
     /**
@@ -99,7 +103,9 @@ class Incident extends Model
         static::updating(function (Incident $incident) {
             // Automatically set ended_at when status changes to RESOLVED or CLOSED
             if ($incident->isDirty('status')) {
-                $newStatus = IncidentStatus::from($incident->status);
+                $newStatus = $incident->status instanceof IncidentStatus 
+                    ? $incident->status 
+                    : IncidentStatus::from($incident->status);
                 
                 if ($newStatus->isClosed() && !$incident->ended_at) {
                     $incident->ended_at = now();

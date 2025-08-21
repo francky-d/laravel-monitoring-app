@@ -48,14 +48,15 @@ class NotificationController extends Controller
     /**
      * Test notification settings by sending a test message.
      */
-    public function test(Request $request): JsonResponse
+    public function test(Request $request, string $type): JsonResponse
     {
+        $request->merge(['type' => $type]);
+        
         $request->validate([
             'type' => 'required|in:email,slack,teams,discord',
         ]);
 
         $user = $request->user();
-        $type = $request->type;
 
         try {
             match ($type) {
@@ -66,13 +67,13 @@ class NotificationController extends Controller
             };
 
             return $this->successResponse(
-                null,
+                ['success' => true],
                 "Test {$type} notification sent successfully"
             );
         } catch (\Exception $e) {
             return $this->errorResponse(
-                "Failed to send test {$type} notification: " . $e->getMessage(),
-                500
+                $e->getMessage(),
+                400
             );
         }
     }
@@ -83,7 +84,7 @@ class NotificationController extends Controller
     private function testEmail($user): void
     {
         if (!$user->notification_email) {
-            throw new \Exception('No notification email configured');
+            throw new \Exception('Email notifications not configured');
         }
 
         // In a real application, you would send an actual email
@@ -98,7 +99,7 @@ class NotificationController extends Controller
     private function testSlack($user): void
     {
         if (!$user->slack_webhook_url) {
-            throw new \Exception('No Slack webhook URL configured');
+            throw new \Exception('Slack webhook URL not configured');
         }
 
         $payload = [
@@ -114,7 +115,7 @@ class NotificationController extends Controller
     private function testTeams($user): void
     {
         if (!$user->teams_webhook_url) {
-            throw new \Exception('No Teams webhook URL configured');
+            throw new \Exception('Teams webhook URL not configured');
         }
 
         $payload = [
@@ -133,7 +134,7 @@ class NotificationController extends Controller
     private function testDiscord($user): void
     {
         if (!$user->discord_webhook_url) {
-            throw new \Exception('No Discord webhook URL configured');
+            throw new \Exception('Discord webhook URL not configured');
         }
 
         $payload = [

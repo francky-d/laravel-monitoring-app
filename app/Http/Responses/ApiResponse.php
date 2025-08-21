@@ -40,7 +40,7 @@ class ApiResponse
         array $meta = []
     ): JsonResponse {
         $response = [
-            'status' => 'success',
+            'success' => true,
             'message' => $message,
         ];
 
@@ -77,11 +77,13 @@ class ApiResponse
         $data = $collection->response()->getData(true);
 
         return response()->json([
-            'status' => 'success',
+            'success' => true,
             'message' => $message,
             'data' => $data['data'],
-            'meta' => $data['meta'] ?? [],
-            'links' => $data['links'] ?? [],
+            'pagination' => array_merge(
+                $data['meta'] ?? [],
+                $data['links'] ?? []
+            ),
         ]);
     }
 
@@ -95,7 +97,7 @@ class ApiResponse
         mixed $data = null
     ): JsonResponse {
         $response = [
-            'status' => 'error',
+            'success' => false,
             'message' => $message,
         ];
 
@@ -168,7 +170,7 @@ class ApiResponse
     public static function noContent(string $message = 'Operation completed successfully'): JsonResponse
     {
         return response()->json([
-            'status' => 'success',
+            'success' => true,
             'message' => $message,
         ], 204);
     }
@@ -188,7 +190,11 @@ class ApiResponse
         }
 
         if ($exception instanceof \Illuminate\Auth\Access\AuthorizationException) {
-            return self::forbidden('You do not have permission to perform this action');
+            return self::forbidden($exception->getMessage() ?: 'You do not have permission to perform this action');
+        }
+
+        if ($exception instanceof \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException) {
+            return self::forbidden($exception->getMessage() ?: 'Access denied');
         }
 
         if ($exception instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {

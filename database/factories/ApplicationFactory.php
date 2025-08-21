@@ -19,11 +19,11 @@ class ApplicationFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->company() . ' ' . $this->faker->randomElement(['API', 'Service', 'App']),
-            'url' => $this->faker->url(),
-            'url_to_watch' => $this->faker->optional()->url(),
-            'expected_http_code' => $this->faker->randomElement([200, 201, 204]),
-            'monitoring_interval' => $this->faker->randomElement([5, 10, 15, 30, 60]),
+            'name' => fake()->word() . ' ' . fake()->randomElement(['API', 'Service', 'App']),
+            'url' => fake()->url(),
+            'url_to_watch' => fake()->optional()->url(),
+            'expected_http_code' => fake()->randomElement([200, 201, 204]),
+            'monitoring_interval' => fake()->randomElement([5, 10, 15, 30, 60]),
             'user_id' => User::factory(),
             'application_group_id' => ApplicationGroup::factory(),
         ];

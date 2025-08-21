@@ -25,26 +25,34 @@ class StoreSubscriptionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'application_id' => [
+            'subscribable_type' => ['required', 'string', Rule::in([Application::class, \App\Models\ApplicationGroup::class])],
+            'subscribable_id' => [
                 'required',
                 'string',
-                'exists:applications,id',
                 function ($attribute, $value, $fail) {
-                    $application = Application::find($value);
-                    if ($application && $application->user_id !== Auth::id()) {
-                        $fail('You can only create subscriptions for your own applications.');
+                    $type = request()->input('subscribable_type');
+                    if (!$type) {
+                        return;
+                    }
+
+                    if (!class_exists($type)) {
+                        $fail('Invalid subscribable type.');
+                        return;
+                    }
+
+                    $model = $type::find($value);
+                    if (!$model) {
+                        $fail('The selected subscribable resource does not exist.');
+                        return;
+                    }
+
+                    if ($model->user_id !== Auth::id()) {
+                        $fail('You can only create subscriptions for your own resources.');
                     }
                 }
             ],
-            'notification_type' => ['required', Rule::in(['email', 'slack', 'teams', 'discord'])],
-            'email' => ['required_if:notification_type,email', 'nullable', 'email', 'max:255'],
-            'webhook_url' => [
-                'required_if:notification_type,slack,teams,discord',
-                'nullable',
-                'url',
-                'max:500'
-            ],
-            'is_active' => ['sometimes', 'boolean'],
+            'notification_channels' => ['required', 'array', 'min:1'],
+            'notification_channels.*' => [Rule::in(['email', 'slack', 'teams', 'discord'])],
         ];
     }
 
@@ -53,12 +61,7 @@ class StoreSubscriptionRequest extends FormRequest
      */
     public function validated($key = null, $default = null): array
     {
-        $validated = parent::validated($key, $default);
-        
-        // Set defaults
-        $validated['is_active'] = $validated['is_active'] ?? true;
-
-        return $validated;
+        return parent::validated($key, $default);
     }
 
     /**
@@ -67,8 +70,8 @@ class StoreSubscriptionRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'email.required_if' => 'Email address is required for email notifications.',
-            'webhook_url.required_if' => 'Webhook URL is required for webhook-based notifications.',
+            'notification_channels.required' => 'At least one notification channel is required.',
+            'notification_channels.min' => 'At least one notification channel is required.',
         ];
     }
 }

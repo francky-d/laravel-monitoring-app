@@ -37,7 +37,7 @@ class MonitorApplicationJob implements ShouldQueue
         try {
             $response = Http::timeout(15)->get($this->application->monitor_url);
             
-            $isHealthy = $response->successful() && $response->status() === 200;
+            $isHealthy = $response->successful() && $response->status() === $this->application->expected_http_code;
             
             if ($isHealthy) {
                 $this->handleHealthyApplication();
@@ -94,6 +94,7 @@ class MonitorApplicationJob implements ShouldQueue
                 'description' => $this->generateIncidentDescription($statusCode, $errorMessage),
                 'severity' => $severity,
                 'status' => IncidentStatus::OPEN,
+                'response_code' => $statusCode > 0 ? $statusCode : null,
                 'started_at' => now(),
             ]);
 
