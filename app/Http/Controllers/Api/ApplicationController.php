@@ -7,6 +7,7 @@ use App\Http\Requests\StoreApplicationRequest;
 use App\Http\Requests\UpdateApplicationRequest;
 use App\Http\Resources\ApplicationResource;
 use App\Http\Resources\SubscriptionResource;
+use App\Http\Traits\HasApiResponses;
 use App\Models\Application;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ApplicationController extends Controller
 {
-    use AuthorizesRequests;
+    use AuthorizesRequests, HasApiResponses;
     /**
      * Display a listing of the resource.
      */
@@ -31,15 +32,10 @@ class ApplicationController extends Controller
 
         $applications = $query->latest()->paginate(15);
 
-        return response()->json([
-            'data' => ApplicationResource::collection($applications->items()),
-            'meta' => [
-                'current_page' => $applications->currentPage(),
-                'per_page' => $applications->perPage(),
-                'total' => $applications->total(),
-                'last_page' => $applications->lastPage(),
-            ]
-        ]);
+        return $this->paginatedResponse(
+            ApplicationResource::collection($applications),
+            'Applications retrieved successfully'
+        );
     }
 
     /**
@@ -50,10 +46,10 @@ class ApplicationController extends Controller
         $application = Application::create($request->validated());
         $application->load(['incidents', 'applicationGroup', 'subscriptions']);
 
-        return response()->json([
-            'message' => 'Application created successfully',
-            'data' => new ApplicationResource($application),
-        ], 201);
+        return $this->createdResponse(
+            new ApplicationResource($application),
+            'Application created successfully'
+        );
     }
 
     /**
@@ -65,9 +61,10 @@ class ApplicationController extends Controller
 
         $application->load(['incidents', 'applicationGroup', 'subscriptions.user']);
 
-        return response()->json([
-            'data' => new ApplicationResource($application),
-        ]);
+        return $this->successResponse(
+            new ApplicationResource($application),
+            'Application retrieved successfully'
+        );
     }
 
     /**
@@ -80,10 +77,10 @@ class ApplicationController extends Controller
         $application->update($request->validated());
         $application->load(['incidents', 'applicationGroup', 'subscriptions']);
 
-        return response()->json([
-            'message' => 'Application updated successfully',
-            'data' => new ApplicationResource($application),
-        ]);
+        return $this->successResponse(
+            new ApplicationResource($application),
+            'Application updated successfully'
+        );
     }
 
     /**
@@ -95,9 +92,7 @@ class ApplicationController extends Controller
 
         $application->delete();
 
-        return response()->json([
-            'message' => 'Application deleted successfully',
-        ]);
+        return $this->successResponse(null, 'Application deleted successfully');
     }
 
     /**
@@ -109,9 +104,10 @@ class ApplicationController extends Controller
 
         $subscriptions = $application->subscriptions()->with('user')->get();
 
-        return response()->json([
-            'data' => SubscriptionResource::collection($subscriptions),
-        ]);
+        return $this->successResponse(
+            SubscriptionResource::collection($subscriptions),
+            'Application subscribers retrieved successfully'
+        );
     }
 
     /**
@@ -124,10 +120,10 @@ class ApplicationController extends Controller
         // TODO: Implement health check logic
         // This would dispatch a job to check the application health
         
-        return response()->json([
-            'message' => 'Health check initiated',
-            'application' => new ApplicationResource($application),
-        ]);
+        return $this->successResponse(
+            new ApplicationResource($application),
+            'Health check initiated'
+        );
     }
 
     /**
@@ -144,11 +140,11 @@ class ApplicationController extends Controller
             ->limit(5)
             ->get();
 
-        return response()->json([
+        return $this->successResponse([
             'application' => new ApplicationResource($application),
             'status' => 'operational', // TODO: Calculate based on recent incidents
             'recent_incidents' => $recentIncidents->count(),
             'last_check' => now(), // TODO: Get from monitoring system
-        ]);
+        ], 'Application status retrieved successfully');
     }
 }

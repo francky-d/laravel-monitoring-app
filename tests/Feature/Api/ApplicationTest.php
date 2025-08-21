@@ -20,6 +20,7 @@ test('user can create application', function () {
 
     $response->assertStatus(201)
         ->assertJsonStructure([
+            'status',
             'message',
             'data' => [
                 'id',
@@ -28,6 +29,10 @@ test('user can create application', function () {
                 'expected_http_code',
                 'user_id',
             ],
+        ])
+        ->assertJson([
+            'status' => 'success',
+            'message' => 'Application created successfully',
         ]);
 
     $this->assertDatabaseHas('applications', [
@@ -44,6 +49,8 @@ test('user can list their applications', function () {
 
     $response->assertStatus(200)
         ->assertJsonStructure([
+            'status',
+            'message',
             'data' => [
                 '*' => [
                     'id',
@@ -53,6 +60,10 @@ test('user can list their applications', function () {
                 ],
             ],
             'meta',
+        ])
+        ->assertJson([
+            'status' => 'success',
+            'message' => 'Applications retrieved successfully',
         ])
         ->assertJsonCount(3, 'data');
 });

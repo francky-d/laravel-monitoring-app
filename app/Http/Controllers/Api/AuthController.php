@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
+use App\Http\Traits\HasApiResponses;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,6 +14,7 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    use HasApiResponses;
     /**
      * Register a new user.
      */
@@ -32,11 +34,10 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
-        return response()->json([
-            'message' => 'User registered successfully',
+        return $this->createdResponse([
             'user' => new UserResource($user),
             'token' => $token,
-        ], 201);
+        ], 'User registered successfully');
     }
 
     /**
@@ -59,11 +60,10 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
-        return response()->json([
-            'message' => 'Login successful',
+        return $this->successResponse([
             'user' => new UserResource($user),
             'token' => $token,
-        ]);
+        ], 'Login successful');
     }
 
     /**
@@ -73,9 +73,7 @@ class AuthController extends Controller
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json([
-            'message' => 'Logged out successfully',
-        ]);
+        return $this->successResponse(null, 'Logged out successfully');
     }
 
     /**
@@ -83,8 +81,9 @@ class AuthController extends Controller
      */
     public function user(Request $request): JsonResponse
     {
-        return response()->json([
-            'user' => new UserResource($request->user()),
-        ]);
+        return $this->successResponse(
+            new UserResource($request->user()),
+            'User profile retrieved successfully'
+        );
     }
 }

@@ -17,9 +17,16 @@ test('user can register', function () {
 
     $response->assertStatus(201)
         ->assertJsonStructure([
+            'status',
             'message',
-            'user' => ['id', 'name', 'email'],
-            'token',
+            'data' => [
+                'user' => ['id', 'name', 'email'],
+                'token',
+            ],
+        ])
+        ->assertJson([
+            'status' => 'success',
+            'message' => 'User registered successfully',
         ]);
 
     $this->assertDatabaseHas('users', [
@@ -40,9 +47,16 @@ test('user can login', function () {
 
     $response->assertStatus(200)
         ->assertJsonStructure([
+            'status',
             'message',
-            'user' => ['id', 'name', 'email'],
-            'token',
+            'data' => [
+                'user' => ['id', 'name', 'email'],
+                'token',
+            ],
+        ])
+        ->assertJson([
+            'status' => 'success',
+            'message' => 'Login successful',
         ]);
 });
 
@@ -52,7 +66,14 @@ test('user can logout', function () {
     $response = $this->postJson('/api/auth/logout');
 
     $response->assertStatus(200)
-        ->assertJson(['message' => 'Logged out successfully']);
+        ->assertJsonStructure([
+            'status',
+            'message',
+        ])
+        ->assertJson([
+            'status' => 'success',
+            'message' => 'Logged out successfully',
+        ]);
 });
 
 test('authenticated user can get profile', function () {
@@ -62,6 +83,12 @@ test('authenticated user can get profile', function () {
 
     $response->assertStatus(200)
         ->assertJsonStructure([
-            'user' => ['id', 'name', 'email'],
+            'status',
+            'message',
+            'data' => ['id', 'name', 'email'],
+        ])
+        ->assertJson([
+            'status' => 'success',
+            'message' => 'User profile retrieved successfully',
         ]);
 });
