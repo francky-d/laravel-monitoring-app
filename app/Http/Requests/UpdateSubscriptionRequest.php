@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class UpdateSubscriptionRequest extends FormRequest
 {
@@ -11,7 +13,7 @@ class UpdateSubscriptionRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return Auth::check();
     }
 
     /**
@@ -22,7 +24,26 @@ class UpdateSubscriptionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'notification_type' => ['sometimes', Rule::in(['email', 'slack', 'teams', 'discord'])],
+            'email' => ['required_if:notification_type,email', 'nullable', 'email', 'max:255'],
+            'webhook_url' => [
+                'required_if:notification_type,slack,teams,discord',
+                'nullable',
+                'url',
+                'max:500'
+            ],
+            'is_active' => ['sometimes', 'boolean'],
+        ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     */
+    public function messages(): array
+    {
+        return [
+            'email.required_if' => 'Email address is required for email notifications.',
+            'webhook_url.required_if' => 'Webhook URL is required for webhook-based notifications.',
         ];
     }
 }

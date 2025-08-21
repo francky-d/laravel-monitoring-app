@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class UpdateNotificationSettingsRequest extends FormRequest
 {
@@ -11,7 +12,7 @@ class UpdateNotificationSettingsRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return Auth::check();
     }
 
     /**
@@ -22,7 +23,23 @@ class UpdateNotificationSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'notification_email' => ['nullable', 'email', 'max:255'],
+            'slack_webhook_url' => ['nullable', 'url', 'max:500'],
+            'teams_webhook_url' => ['nullable', 'url', 'max:500'],
+            'discord_webhook_url' => ['nullable', 'url', 'max:500'],
+        ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     */
+    public function messages(): array
+    {
+        return [
+            'notification_email.email' => 'Please provide a valid email address for notifications.',
+            'slack_webhook_url.url' => 'Please provide a valid Slack webhook URL.',
+            'teams_webhook_url.url' => 'Please provide a valid Teams webhook URL.',
+            'discord_webhook_url.url' => 'Please provide a valid Discord webhook URL.',
         ];
     }
 }
