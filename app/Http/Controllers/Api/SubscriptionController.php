@@ -14,17 +14,15 @@ use Illuminate\Http\Request;
 
 class SubscriptionController extends Controller
 {
-    use HasApiResponses, AuthorizesRequests;
+    use AuthorizesRequests, HasApiResponses;
 
     /**
      * Display a listing of subscriptions.
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Subscription::with(['application', 'user'])
-            ->whereHas('application', function ($q) use ($request) {
-                $q->where('user_id', $request->user()->id);
-            });
+        $query = Subscription::with(['subscribable', 'user'])
+            ->where('user_id', $request->user()->id);
 
         // Filter by application
         if ($request->has('application_id')) {
@@ -59,7 +57,7 @@ class SubscriptionController extends Controller
 
         $subscription = Subscription::create($validated);
 
-        $subscription->load(['application', 'user']);
+        $subscription->load(['subscribable', 'user']);
 
         return $this->createdResponse(
             new SubscriptionResource($subscription),
@@ -74,7 +72,7 @@ class SubscriptionController extends Controller
     {
         $this->authorize('view', $subscription);
 
-        $subscription->load(['application', 'user']);
+        $subscription->load(['subscribable', 'user']);
 
         return $this->successResponse(
             new SubscriptionResource($subscription),
@@ -91,7 +89,7 @@ class SubscriptionController extends Controller
 
         $subscription->update($request->validated());
 
-        $subscription->load(['application', 'user']);
+        $subscription->load(['subscribable', 'user']);
 
         return $this->successResponse(
             new SubscriptionResource($subscription),
@@ -108,7 +106,10 @@ class SubscriptionController extends Controller
 
         $subscription->delete();
 
-        return $this->noContentResponse('Subscription deleted successfully');
+        return $this->successResponse(
+            null,
+            'Subscription deleted successfully'
+        );
     }
 
     /**
@@ -118,9 +119,9 @@ class SubscriptionController extends Controller
     {
         $this->authorize('update', $subscription);
 
-        $subscription->update(['is_active' => !$subscription->is_active]);
+        $subscription->update(['is_active' => ! $subscription->is_active]);
 
-        $subscription->load(['application', 'user']);
+        $subscription->load(['subscribable', 'user']);
 
         $status = $subscription->is_active ? 'activated' : 'deactivated';
 
@@ -137,14 +138,24 @@ class SubscriptionController extends Controller
     {
         $this->authorize('update', $subscription);
 
-        if (!$subscription->is_active) {
+        if (! $subscription->is_active) {
             return $this->errorResponse('Cannot test inactive subscription', 400);
         }
 
         try {
             // Create a test incident for notification testing
+            // For polymorphic subscriptions, we need to handle both applications and groups
+            $subscribable = $subscription->subscribable;
+            $applicationForIncident = $subscribable instanceof \App\Models\Application 
+                ? $subscribable 
+                : $subscribable->applications()->first(); // Get first app from group
+            
+            if (!$applicationForIncident) {
+                throw new \Exception('No application found for testing notification');
+            }
+            
             $testIncident = new \App\Models\Incident([
-                'application_id' => $subscription->application_id,
+                'application_id' => $applicationForIncident->id,
                 'title' => 'Test Notification',
                 'description' => 'This is a test notification to verify your subscription settings.',
                 'severity' => \App\Enums\IncidentSeverity::LOW,
@@ -153,10 +164,12 @@ class SubscriptionController extends Controller
             ]);
 
             // Load the application relationship for the test incident
-            $testIncident->setRelation('application', $subscription->application);
+            $testIncident->setRelation('application', $applicationForIncident);
 
-            // Send test notification
-            $this->sendTestNotification($subscription, $testIncident);
+            // Send test notification for each channel
+            foreach ($subscription->notification_channels as $channel) {
+                $this->sendTestNotificationForChannel($subscription, $testIncident, $channel);
+            }
 
             return $this->successResponse(
                 null,
@@ -164,7 +177,7 @@ class SubscriptionController extends Controller
             );
         } catch (\Exception $e) {
             return $this->errorResponse(
-                'Failed to send test notification: ' . $e->getMessage(),
+                'Failed to send test notification: '.$e->getMessage(),
                 500
             );
         }
@@ -181,28 +194,28 @@ class SubscriptionController extends Controller
             'total' => Subscription::whereHas('application', function ($q) use ($userId) {
                 $q->where('user_id', $userId);
             })->count(),
-            
+
             'active' => Subscription::whereHas('application', function ($q) use ($userId) {
                 $q->where('user_id', $userId);
             })->where('is_active', true)->count(),
-            
+
             'inactive' => Subscription::whereHas('application', function ($q) use ($userId) {
                 $q->where('user_id', $userId);
             })->where('is_active', false)->count(),
-            
+
             'by_type' => [
                 'email' => Subscription::whereHas('application', function ($q) use ($userId) {
                     $q->where('user_id', $userId);
                 })->where('notification_type', 'email')->count(),
-                
+
                 'slack' => Subscription::whereHas('application', function ($q) use ($userId) {
                     $q->where('user_id', $userId);
                 })->where('notification_type', 'slack')->count(),
-                
+
                 'teams' => Subscription::whereHas('application', function ($q) use ($userId) {
                     $q->where('user_id', $userId);
                 })->where('notification_type', 'teams')->count(),
-                
+
                 'discord' => Subscription::whereHas('application', function ($q) use ($userId) {
                     $q->where('user_id', $userId);
                 })->where('notification_type', 'discord')->count(),
@@ -213,16 +226,16 @@ class SubscriptionController extends Controller
     }
 
     /**
-     * Send a test notification for the subscription.
+     * Send a test notification for a specific channel.
      */
-    private function sendTestNotification(Subscription $subscription, \App\Models\Incident $testIncident): void
+    private function sendTestNotificationForChannel(Subscription $subscription, \App\Models\Incident $testIncident, string $channel): void
     {
-        match ($subscription->notification_type) {
+        match ($channel) {
             'email' => $this->sendTestEmail($subscription, $testIncident),
             'slack' => $this->sendTestSlack($subscription, $testIncident),
             'teams' => $this->sendTestTeams($subscription, $testIncident),
             'discord' => $this->sendTestDiscord($subscription, $testIncident),
-            default => throw new \Exception("Unknown notification type: {$subscription->notification_type}"),
+            default => throw new \Exception("Unknown notification channel: {$channel}"),
         };
     }
 
@@ -231,13 +244,13 @@ class SubscriptionController extends Controller
      */
     private function sendTestEmail(Subscription $subscription, \App\Models\Incident $testIncident): void
     {
-        if (!$subscription->email) {
-            throw new \Exception('No email address configured for this subscription');
+        if (! $subscription->user->email) {
+            throw new \Exception('No email address configured for this user');
         }
 
         // In a real application, you would send an actual email
         \Illuminate\Support\Facades\Log::info(
-            "Test email notification sent to {$subscription->email} for application {$testIncident->application->name}"
+            "Test email notification sent to {$subscription->user->email} for application {$testIncident->application->name}"
         );
     }
 
@@ -246,7 +259,7 @@ class SubscriptionController extends Controller
      */
     private function sendTestSlack(Subscription $subscription, \App\Models\Incident $testIncident): void
     {
-        if (!$subscription->webhook_url) {
+        if (! $subscription->webhook_url) {
             throw new \Exception('No webhook URL configured for this subscription');
         }
 
@@ -279,7 +292,7 @@ class SubscriptionController extends Controller
      */
     private function sendTestTeams(Subscription $subscription, \App\Models\Incident $testIncident): void
     {
-        if (!$subscription->webhook_url) {
+        if (! $subscription->webhook_url) {
             throw new \Exception('No webhook URL configured for this subscription');
         }
 
@@ -313,7 +326,7 @@ class SubscriptionController extends Controller
      */
     private function sendTestDiscord(Subscription $subscription, \App\Models\Incident $testIncident): void
     {
-        if (!$subscription->webhook_url) {
+        if (! $subscription->webhook_url) {
             throw new \Exception('No webhook URL configured for this subscription');
         }
 

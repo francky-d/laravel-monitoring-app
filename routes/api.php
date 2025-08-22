@@ -58,6 +58,7 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Subscriptions
     Route::apiResource('subscriptions', SubscriptionController::class);
+    Route::post('subscriptions/{subscription}/test', [SubscriptionController::class, 'test']);
     
     // Notification settings
     Route::prefix('user')->group(function () {
