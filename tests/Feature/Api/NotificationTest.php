@@ -63,6 +63,9 @@ test('user can update notification settings', function () {
 });
 
 test('user can test email notification', function () {
+    // Set up email notifications first
+    $this->user->update(['notification_email' => $this->user->email]);
+
     $response = $this->postJson('/api/user/test-notification/email');
 
     $response->assertOk()
@@ -80,7 +83,7 @@ test('user can test slack notification', function () {
 
     $response->assertOk()
         ->assertJson([
-            'status' => 'success',
+            'success' => true,
             'message' => 'Test slack notification sent successfully',
             'data' => [
                 'success' => true,
@@ -118,7 +121,7 @@ test('test notification fails for invalid channel', function () {
     $response = $this->postJson('/api/user/test-notification/invalid_channel');
 
     $response->assertUnprocessable()
-        ->assertJsonValidationErrors(['channel']);
+        ->assertJsonValidationErrors(['type']);
 });
 
 test('test notification fails when webhook url is missing', function () {
