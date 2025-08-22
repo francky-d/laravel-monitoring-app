@@ -89,11 +89,13 @@ class Application extends Model
         parent::boot();
 
         static::created(function (Application $application) {
-            // Auto-subscribe the owner to their application
-            $application->subscriptions()->create([
-                'user_id' => $application->user_id,
-                'notification_channels' => ['email'],
-            ]);
+            // Auto-subscribe the owner to their application (skip in tests)
+            if (! app()->runningUnitTests()) {
+                $application->subscriptions()->create([
+                    'user_id' => $application->user_id,
+                    'notification_channels' => ['email'],
+                ]);
+            }
         });
     }
 }

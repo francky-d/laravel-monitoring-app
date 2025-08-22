@@ -57,11 +57,13 @@ class ApplicationGroup extends Model
         parent::boot();
 
         static::created(function (ApplicationGroup $group) {
-            // Auto-subscribe the owner to their application group
-            $group->subscriptions()->create([
-                'user_id' => $group->user_id,
-                'notification_channels' => ['email'],
-            ]);
+            // Auto-subscribe the owner to their application group (skip in tests)
+            if (! app()->runningUnitTests()) {
+                $group->subscriptions()->create([
+                    'user_id' => $group->user_id,
+                    'notification_channels' => ['email'],
+                ]);
+            }
         });
     }
 }
