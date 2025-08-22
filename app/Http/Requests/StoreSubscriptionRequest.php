@@ -31,28 +31,44 @@ class StoreSubscriptionRequest extends FormRequest
                 'string',
                 function ($attribute, $value, $fail) {
                     $type = request()->input('subscribable_type');
-                    if (!$type) {
+                    if (! $type) {
                         return;
                     }
 
-                    if (!class_exists($type)) {
+                    if (! class_exists($type)) {
                         $fail('Invalid subscribable type.');
+
                         return;
                     }
 
                     $model = $type::find($value);
-                    if (!$model) {
+                    if (! $model) {
                         $fail('The selected subscribable resource does not exist.');
+
                         return;
                     }
 
                     if ($model->user_id !== Auth::id()) {
                         $fail('You can only create subscriptions for your own resources.');
+
+                        return;
                     }
-                }
+
+                    // Check for existing subscription
+                    $existingSubscription = \App\Models\Subscription::where([
+                        'user_id' => Auth::id(),
+                        'subscribable_type' => $type,
+                        'subscribable_id' => $value,
+                    ])->exists();
+
+                    if ($existingSubscription) {
+                        $fail('You already have a subscription for this resource.');
+                    }
+                },
             ],
             'notification_channels' => ['required', 'array', 'min:1'],
             'notification_channels.*' => [Rule::in(['email', 'slack', 'teams', 'discord'])],
+            'webhook_url' => ['nullable', 'url'],
         ];
     }
 

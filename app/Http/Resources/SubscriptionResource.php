@@ -20,6 +20,7 @@ class SubscriptionResource extends JsonResource
             'subscribable_type' => $this->subscribable_type,
             'subscribable_id' => $this->subscribable_id,
             'notification_channels' => $this->notification_channels,
+            'webhook_url' => $this->webhook_url,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             

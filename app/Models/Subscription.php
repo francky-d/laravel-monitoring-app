@@ -24,6 +24,7 @@ class Subscription extends Model
         'subscribable_type',
         'subscribable_id',
         'notification_channels',
+        'webhook_url',
     ];
 
     /**
