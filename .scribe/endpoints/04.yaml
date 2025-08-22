@@ -1,0 +1,491 @@
+name: Incidents
+description: |-
+
+  APIs for managing incidents including creation, listing, updates, and status changes.
+endpoints:
+  -
+    httpMethods:
+      - GET
+    uri: api/incidents
+    metadata:
+      groupName: Incidents
+      groupDescription: |-
+
+        APIs for managing incidents including creation, listing, updates, and status changes.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'List incidents'
+      description: 'Retrieve a paginated list of incidents for applications owned by the authenticated user.'
+      authenticated: true
+      deprecated: false
+      custom: []
+    headers:
+      Authorization: 'Bearer Bearer {YOUR_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
+      application_id:
+        name: application_id
+        description: 'optional Filter by application ID.'
+        required: false
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      status:
+        name: status
+        description: 'optional Filter by status (open, resolved, investigating).'
+        required: false
+        example: open
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      severity:
+        name: severity
+        description: 'optional Filter by severity (low, medium, high, critical).'
+        required: false
+        example: high
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      start_date:
+        name: start_date
+        description: 'optional Filter incidents after this date.'
+        required: false
+        example: '2024-01-01'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      end_date:
+        name: end_date
+        description: 'optional Filter incidents before this date.'
+        required: false
+        example: '2024-12-31'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanQueryParameters:
+      application_id: 1
+      status: open
+      severity: high
+      start_date: '2024-01-01'
+      end_date: '2024-12-31'
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+            "success": true,
+            "message": "Incidents retrieved successfully",
+            "data": {
+              "data": [
+                {
+                  "id": 1,
+                  "title": "Server Error",
+                  "description": "500 error on login",
+                  "status": "open",
+                  "severity": "high",
+                  "started_at": "2024-01-15T10:00:00Z",
+                  "application": {
+                    "id": 1,
+                    "name": "My App"
+                  }
+                }
+              ],
+              "current_page": 1,
+              "per_page": 15,
+              "total": 1
+            }
+          }
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/incidents
+    metadata:
+      groupName: Incidents
+      groupDescription: |-
+
+        APIs for managing incidents including creation, listing, updates, and status changes.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Store a newly created incident.'
+      description: ''
+      authenticated: true
+      deprecated: false
+      custom: []
+    headers:
+      Authorization: 'Bearer Bearer {YOUR_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      title:
+        name: title
+        description: 'Must not be greater than 255 characters.'
+        required: true
+        example: b
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      description:
+        name: description
+        description: ''
+        required: true
+        example: 'Eius et animi quos velit et.'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      application_id:
+        name: application_id
+        description: 'The <code>id</code> of an existing record in the applications table.'
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      status:
+        name: status
+        description: ''
+        required: false
+        example: OPEN
+        type: string
+        enumValues:
+          - OPEN
+          - IN_PROGRESS
+          - RESOLVED
+          - CLOSED
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      severity:
+        name: severity
+        description: ''
+        required: false
+        example: CRITICAL
+        type: string
+        enumValues:
+          - LOW
+          - HIGH
+          - CRITICAL
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      started_at:
+        name: started_at
+        description: 'Must be a valid date.'
+        required: false
+        example: '2025-08-22T09:20:27'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      title: b
+      description: 'Eius et animi quos velit et.'
+      application_id: architecto
+      status: OPEN
+      severity: CRITICAL
+      started_at: '2025-08-22T09:20:27'
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+      - PATCH
+    uri: 'api/incidents/{id}'
+    metadata:
+      groupName: Incidents
+      groupDescription: |-
+
+        APIs for managing incidents including creation, listing, updates, and status changes.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Update the specified incident.'
+      description: ''
+      authenticated: true
+      deprecated: false
+      custom: []
+    headers:
+      Authorization: 'Bearer Bearer {YOUR_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the incident.'
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: architecto
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      title:
+        name: title
+        description: 'Must not be greater than 255 characters.'
+        required: false
+        example: b
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      description:
+        name: description
+        description: ''
+        required: false
+        example: 'Eius et animi quos velit et.'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      status:
+        name: status
+        description: ''
+        required: false
+        example: OPEN
+        type: string
+        enumValues:
+          - OPEN
+          - IN_PROGRESS
+          - RESOLVED
+          - CLOSED
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      severity:
+        name: severity
+        description: ''
+        required: false
+        example: HIGH
+        type: string
+        enumValues:
+          - LOW
+          - HIGH
+          - CRITICAL
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      started_at:
+        name: started_at
+        description: 'Must be a valid date.'
+        required: false
+        example: '2025-08-22T09:20:27'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      title: b
+      description: 'Eius et animi quos velit et.'
+      status: OPEN
+      severity: HIGH
+      started_at: '2025-08-22T09:20:27'
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - DELETE
+    uri: 'api/incidents/{id}'
+    metadata:
+      groupName: Incidents
+      groupDescription: |-
+
+        APIs for managing incidents including creation, listing, updates, and status changes.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Remove the specified incident.'
+      description: ''
+      authenticated: true
+      deprecated: false
+      custom: []
+    headers:
+      Authorization: 'Bearer Bearer {YOUR_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the incident.'
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: architecto
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+    uri: 'api/incidents/{incident_id}/resolve'
+    metadata:
+      groupName: Incidents
+      groupDescription: |-
+
+        APIs for managing incidents including creation, listing, updates, and status changes.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Mark incident as resolved.'
+      description: ''
+      authenticated: true
+      deprecated: false
+      custom: []
+    headers:
+      Authorization: 'Bearer Bearer {YOUR_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      incident_id:
+        name: incident_id
+        description: 'The ID of the incident.'
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      incident_id: architecto
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - PUT
+    uri: 'api/incidents/{incident_id}/reopen'
+    metadata:
+      groupName: Incidents
+      groupDescription: |-
+
+        APIs for managing incidents including creation, listing, updates, and status changes.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Reopen a resolved incident.'
+      description: ''
+      authenticated: true
+      deprecated: false
+      custom: []
+    headers:
+      Authorization: 'Bearer Bearer {YOUR_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      incident_id:
+        name: incident_id
+        description: 'The ID of the incident.'
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      incident_id: architecto
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+    custom: []

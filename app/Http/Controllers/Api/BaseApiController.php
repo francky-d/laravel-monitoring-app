@@ -3,67 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use OpenApi\Attributes as OA;
 
 /**
- * @OA\Info(
- *     version="1.0.0",
- *     title="Laravel Application Monitoring API",
- *     description="API for monitoring applications and managing incidents, notifications and subscriptions",
- *     @OA\Contact(
- *         email="support@example.com"
- *     ),
- *     @OA\License(
- *         name="MIT",
- *         url="https://opensource.org/licenses/MIT"
- *     )
- * )
- * 
  * @group System Status
  * 
  * APIs for checking system status and health.
- */
- * @OA\Server(
- *     url=L5_SWAGGER_CONST_HOST,
- *     description="API Server"
- * )
- * 
- * @OA\SecurityScheme(
- *     securityScheme="bearerAuth",
- *     type="http",
- *     scheme="bearer",
- *     bearerFormat="JWT"
- * )
- * 
- * @OA\Tag(
- *     name="System",
- *     description="System status and health checks"
- * )
- * 
- * @OA\Tag(
- *     name="Applications",
- *     description="Operations related to application management"
- * )
- * 
- * @OA\Tag(
- *     name="Incidents",
- *     description="Operations related to incident management"
- * )
- * 
- * @OA\Tag(
- *     name="Subscriptions",
- *     description="Operations related to notification subscriptions"
- * )
- * 
- * @OA\Tag(
- *     name="Application Groups",
- *     description="Operations related to application group management"
- * )
- * 
- * @OA\Tag(
- *     name="Notifications",
- *     description="Operations related to notification settings"
- * )
  */
 class BaseApiController extends Controller
 {
@@ -83,7 +27,6 @@ class BaseApiController extends Controller
      *     "timestamp": "2025-08-22T01:58:09.000000Z"
      *   }
      * }
-     */
      */
     public function status()
     {

@@ -14,12 +14,49 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @group Incidents
+ * 
+ * APIs for managing incidents including creation, listing, updates, and status changes.
+ */
 class IncidentController extends Controller
 {
     use HasApiResponses, AuthorizesRequests;
 
     /**
-     * Display a listing of incidents.
+     * List incidents
+     * 
+     * Retrieve a paginated list of incidents for applications owned by the authenticated user.
+     * 
+     * @queryParam application_id integer optional Filter by application ID. Example: 1
+     * @queryParam status string optional Filter by status (open, resolved, investigating). Example: open
+     * @queryParam severity string optional Filter by severity (low, medium, high, critical). Example: high
+     * @queryParam start_date string optional Filter incidents after this date. Example: 2024-01-01
+     * @queryParam end_date string optional Filter incidents before this date. Example: 2024-12-31
+     * 
+     * @response 200 {
+     *   "success": true,
+     *   "message": "Incidents retrieved successfully",
+     *   "data": {
+     *     "data": [
+     *       {
+     *         "id": 1,
+     *         "title": "Server Error",
+     *         "description": "500 error on login",
+     *         "status": "open",
+     *         "severity": "high",
+     *         "started_at": "2024-01-15T10:00:00Z",
+     *         "application": {
+     *           "id": 1,
+     *           "name": "My App"
+     *         }
+     *       }
+     *     ],
+     *     "current_page": 1,
+     *     "per_page": 15,
+     *     "total": 1
+     *   }
+     * }
      */
     public function index(Request $request): JsonResponse
     {
