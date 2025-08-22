@@ -19,6 +19,10 @@ use OpenApi\Attributes as OA;
  *     )
  * )
  * 
+ * @group System Status
+ * 
+ * APIs for checking system status and health.
+ */
  * @OA\Server(
  *     url=L5_SWAGGER_CONST_HOST,
  *     description="API Server"
@@ -64,27 +68,22 @@ use OpenApi\Attributes as OA;
 class BaseApiController extends Controller
 {
     /**
-     * @OA\Get(
-     *     path="/api/status",
-     *     summary="API Status",
-     *     description="Get the API status and version information",
-     *     tags={"System"},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful response",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="API is running"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="object",
-     *                 @OA\Property(property="version", type="string", example="1.0.0"),
-     *                 @OA\Property(property="status", type="string", example="healthy"),
-     *                 @OA\Property(property="timestamp", type="string", format="date-time")
-     *             )
-     *         )
-     *     )
-     * )
+     * Get API status
+     * 
+     * Check if the API is running and get basic system information.
+     * 
+     * @unauthenticated
+     * 
+     * @response 200 {
+     *   "success": true,
+     *   "message": "API is running",
+     *   "data": {
+     *     "version": "1.0.0",
+     *     "status": "healthy",
+     *     "timestamp": "2025-08-22T01:58:09.000000Z"
+     *   }
+     * }
+     */
      */
     public function status()
     {

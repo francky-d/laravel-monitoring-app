@@ -9,12 +9,32 @@ use App\Http\Traits\HasApiResponses;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @group Notification Management
+ * 
+ * APIs for managing user notification settings and testing notification channels.
+ */
 class NotificationController extends Controller
 {
     use HasApiResponses;
 
     /**
-     * Get user's notification settings.
+     * Get notification settings
+     * 
+     * Retrieve the current user's notification settings including configured webhook URLs 
+     * and notification preferences.
+     * 
+     * @response 200 {
+     *   "success": true,
+     *   "message": "Notification settings retrieved successfully",
+     *   "data": {
+     *     "email_notifications": true,
+     *     "slack_webhook_url": "https://hooks.slack.com/services/...",
+     *     "teams_webhook_url": "https://your-tenant.webhook.office.com/...",
+     *     "discord_webhook_url": "https://discord.com/api/webhooks/...",
+     *     "default_notification_channels": ["email"]
+     *   }
+     * }
      */
     public function settings(Request $request): JsonResponse
     {
@@ -32,7 +52,30 @@ class NotificationController extends Controller
     }
 
     /**
-     * Update user's notification settings.
+     * Update notification settings
+     * 
+     * Update the current user's notification settings including webhook URLs 
+     * and notification preferences.
+     * 
+     * @bodyParam email_notifications boolean optional Whether to enable email notifications. Example: true
+     * @bodyParam notification_email string optional Email address for notifications. Example: user@example.com
+     * @bodyParam slack_webhook_url string optional Slack webhook URL for notifications. Example: https://hooks.slack.com/services/...
+     * @bodyParam teams_webhook_url string optional Microsoft Teams webhook URL. Example: https://your-tenant.webhook.office.com/...
+     * @bodyParam discord_webhook_url string optional Discord webhook URL. Example: https://discord.com/api/webhooks/...
+     * 
+     * @response 200 {
+     *   "success": true,
+     *   "message": "Notification settings updated successfully",
+     *   "data": {
+     *     "id": 1,
+     *     "name": "John Doe",
+     *     "email": "user@example.com",
+     *     "notification_email": "user@example.com",
+     *     "slack_webhook_url": "https://hooks.slack.com/services/...",
+     *     "teams_webhook_url": null,
+     *     "discord_webhook_url": null
+     *   }
+     * }
      */
     public function updateSettings(UpdateNotificationSettingsRequest $request): JsonResponse
     {
@@ -47,7 +90,24 @@ class NotificationController extends Controller
     }
 
     /**
-     * Test notification settings by sending a test message.
+     * Test notification channel
+     * 
+     * Send a test notification through the specified channel to verify configuration.
+     * 
+     * @urlParam type string required The notification channel to test. Must be one of: email, slack, teams, discord. Example: slack
+     * 
+     * @response 200 {
+     *   "success": true,
+     *   "message": "Test slack notification sent successfully",
+     *   "data": {
+     *     "success": true
+     *   }
+     * }
+     * 
+     * @response 400 {
+     *   "success": false,
+     *   "message": "Slack webhook URL not configured"
+     * }
      */
     public function test(Request $request, string $type): JsonResponse
     {
@@ -146,7 +206,25 @@ class NotificationController extends Controller
     }
 
     /**
-     * Get notification history (placeholder for future implementation).
+     * Get notification history
+     * 
+     * Retrieve statistics and history of sent notifications for the current user.
+     * 
+     * @response 200 {
+     *   "success": true,
+     *   "message": "Notification history retrieved successfully",
+     *   "data": {
+     *     "total_sent": 0,
+     *     "last_7_days": 0,
+     *     "by_type": {
+     *       "email": 0,
+     *       "slack": 0,
+     *       "teams": 0,
+     *       "discord": 0
+     *     },
+     *     "recent_notifications": []
+     *   }
+     * }
      */
     public function history(Request $request): JsonResponse
     {
