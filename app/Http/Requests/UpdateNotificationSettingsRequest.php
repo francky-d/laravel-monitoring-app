@@ -23,10 +23,13 @@ class UpdateNotificationSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'email_notifications' => ['sometimes', 'boolean'],
             'notification_email' => ['nullable', 'email', 'max:255'],
             'slack_webhook_url' => ['nullable', 'url', 'max:500'],
             'teams_webhook_url' => ['nullable', 'url', 'max:500'],
             'discord_webhook_url' => ['nullable', 'url', 'max:500'],
+            'default_notification_channels' => ['sometimes', 'array'],
+            'default_notification_channels.*' => ['string', 'in:email,slack,teams,discord'],
         ];
     }
 

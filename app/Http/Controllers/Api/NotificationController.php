@@ -80,13 +80,33 @@ class NotificationController extends Controller
     public function updateSettings(UpdateNotificationSettingsRequest $request): JsonResponse
     {
         $user = $request->user();
+        $validated = $request->validated();
         
-        $user->update($request->validated());
+        // Handle email_notifications boolean -> notification_email mapping
+        if (isset($validated['email_notifications'])) {
+            $validated['notification_email'] = $validated['email_notifications'] ? $user->email : null;
+            unset($validated['email_notifications']);
+        }
+        
+        // Store default_notification_channels if provided (for future use)
+        if (isset($validated['default_notification_channels'])) {
+            // For now, just remove it from the validated data since User model doesn't have this field yet
+            unset($validated['default_notification_channels']);
+        }
+        
+        $user->update($validated);
+        $user->refresh();
 
-        return $this->successResponse(
-            new UserResource($user),
-            'Notification settings updated successfully'
-        );
+        // Return the same structure as the settings method
+        $settings = [
+            'email_notifications' => !empty($user->notification_email),
+            'slack_webhook_url' => $user->slack_webhook_url,
+            'teams_webhook_url' => $user->teams_webhook_url,
+            'discord_webhook_url' => $user->discord_webhook_url,
+            'default_notification_channels' => ['email'], // Default value for now
+        ];
+
+        return $this->successResponse($settings, 'Notification settings updated successfully');
     }
 
     /**

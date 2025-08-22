@@ -53,6 +53,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the email notifications status.
+     */
+    public function getEmailNotificationsAttribute(): bool
+    {
+        return !empty($this->notification_email);
+    }
+
+    /**
      * Get the applications for the user.
      */
     public function applications(): HasMany
